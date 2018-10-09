@@ -12,11 +12,15 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.provider.Settings;
 import android.support.v4.app.NavUtils;
@@ -168,8 +172,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onCreate(savedInstanceState);
         Log.d("SettingsAct", "Settings opened");
 
+        //load preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = prefs.edit();
+
+        String prefixStr, folderStr, timeFileGenerator;
+
+        prefixStr = prefs.getString("cow_file_prefix", "ADAS");
+        folderStr = prefs.getString("cow_folder",getResources().getString(R.string.app_name));
+        timeFileGenerator = prefs.getString("cow_period_files", "5" );
+        editor.putString("cow_file_prefix", prefixStr);
+        editor.putString("cow_folder", folderStr);
+        editor.putString("cow_file_prefix", timeFileGenerator);
 
         //Read bluetooth status
         bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -256,7 +270,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName)
                 || ConnectionPreferenceFragment.class.getName().equals(fragmentName)
-                || CowPreferenceFragment.class.getName().equals(fragmentName);
+                || CowPreferenceFragment.class.getName().equals(fragmentName)
+                || SensorsPreferenceFragment.class.getName().equals(fragmentName);
+
     }
 
     /**
@@ -429,11 +445,32 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         startActivity(intent);
                     }
 
+                    if(key.equals("sensor_enable_pref")){
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        boolean sensorEn;
+                        sensorEn = sharedPreferences.getBoolean("sensor_enable_pref", true);
+
+
+                        if(!sensorEn) {
+
+                            //TODO: Disable the sensors buttons
+//                            PreferenceCategory myPrefCat = (PreferenceCategory) findPreference("category_sensors");
+//                            //preferenceScreen.removePreference(myPrefCat);
+//                            myPrefCat.findPreference("sensor_acc_pref").setEnabled(false);
+////                            sensorsPreferenceFragment.findPreference("sensor_acc_pref").setEnabled(false);
+////                            getPreferenceScreen().findPreference("sensor_gyr_pref").setEnabled(false);
+////                            getPreferenceScreen().findPreference("sensor_ang_pref").setEnabled(false);
+                        }
+                        else{
+
+                        }
+                    }
+
                 }
             };
 
 
-
+    // COW PREF //
     /**
      * This fragment shows Connection preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -455,6 +492,37 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("cow_folder"));
             bindPreferenceSummaryToValue(findPreference("cow_file_prefix"));
             bindPreferenceSummaryToValue(findPreference("cow_period_files"));
+
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    // SENSORS //
+    /**
+     * This fragment shows Connection preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class SensorsPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_sensors);
+            setHasOptionsMenu(true);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+            // to their values. When their values change, their summaries are
+            // updated to reflect the new value, per the Android Design
+            // guidelines.
 
         }
 

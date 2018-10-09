@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- A 'parent' preference, which enables/disables child preferences (below)
+     when checked/unchecked. -->
+    <PreferenceCategory
+        android:title="CSV Logging"
+        android:icon="@drawable/pref_ic_mode">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sensor_enable_pref"
+            android:title="Enable logging"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sensors"
+        android:key="category_sensors"
+        android:icon="@drawable/pref_ic_mode">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sensor_acc_pref"
+            android:title="Accelerometer"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sensor_gyr_pref"
+            android:title="Gyroscope"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sensor_ang_pref"
+            android:title="Angle (Mag + Acc)"/>
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

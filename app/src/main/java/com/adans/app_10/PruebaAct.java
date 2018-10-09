@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -190,8 +191,18 @@ public class PruebaAct extends AppCompatActivity implements LocationListener,Gps
     void getLocation() {
 
         try {
+            // Retrieve a list of location providers that have fine accuracy, no monetary cost, etc
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setCostAllowed(false);
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) (dly * 1000), 1, this);
+            String providerName = locationManager.getBestProvider(criteria, true);
+            Log.d("PruebAct", providerName);
+
+           // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) (dly * 1000), 1, this);
+            locationManager.requestLocationUpdates(providerName, (long) (dly * 1000), 1, this);
+
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, (long) (0.1 * 1000), 1, this);
 
         } catch (SecurityException e) {
             e.printStackTrace();

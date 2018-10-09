@@ -109,20 +109,7 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
     //Instancia GPS App
     GpsDataService gpsapp;
     //Instancia Sensores Servicio
-    SensorsService sensorserv;
-    //Handler
-    private Handler mHandler = new Handler();
-    //Vars DB
-    String TS, VAX, VAY, VAZ, VGX, VGY, VGZ, ALT, AGX, AGY, AGZ, NOSts;
-    String FC;
-
-    //Timestamp
-    String ts;
-    public static String tss;
-    //Data line
-    String dataline;
-
-    private String dateString2; //format yyMMdd_hhmm_ss_SSS
+    SensorsService sensorsService;
 
     //Preferences
     SharedPreferences prefs;
@@ -130,17 +117,9 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
 
     private OnFragmentInteractionListener mListener;
 
-    //Data Wirter CSV
-    CSVWriter DBCSVwriter;
-    FileWriter mFileWriter;
-
-    //Timestamp
-    Long tsLong;
-
     //Var hour
     int hr;
 
-    String fecha;
 
     public CowTabFragment1() {
         // Required empty public constructor
@@ -170,10 +149,8 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         editor = prefs.edit();
 
         gpsapp = new GpsDataService();
-        sensorserv = new SensorsService();
+        sensorsService = new SensorsService();
 
-        tsLong = System.currentTimeMillis() / 1000;
-        ts = String.valueOf(tsLong);
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR, 24);
@@ -256,70 +233,57 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
 
         //Mode end radio buttons
 
-        sStartBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(EDOGPSBoo) {
-                    Intent intent = new Intent(getActivity(), CowService.class);
-                    getActivity().startService(intent);
-                    Log.d(TAG, "START BTN CLICKED");
-                    //Services Methods
-                    startGPSService();
-                    starBinder();
-                    //DB Saver
-                    startRepeating();
-                }else {
-                    Toast.makeText(getApplicationContext(), "Espera la conexión del GPS", Toast.LENGTH_LONG).show(); }
-            }
-        });
-        sStopBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(),CowService.class);
-                getActivity().stopService(intent);
-                stopRepeating();
-            }
-        });
         sBindBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(sBound) {
-                    getActivity().unbindService(sServerConn);
+//                    getActivity().unbindService(sServerConn);
+                    getApplicationContext().unbindService(snsServerConn);
                     //disposable.clear(); // do not send event after activity has been destroyed
-                    disposable.dispose();
+                    if(disposable!=null)
+                        disposable.dispose();
                     sStatusTxt.setText(DISCONNECTED);
                     sBound=false;
                 }
-                    Intent intent = new Intent(getActivity(), CowService.class);
+                    /*Intent intent = new Intent(getActivity(), CowService.class);
                     getActivity().bindService(intent, sServerConn, Context.BIND_AUTO_CREATE);
 
                     String pairedDeviceMac = prefs.getString("cow_paired_mac", "Not synced");
                     String pairedDevice = prefs.getString("cow_paired_name", "COW_UNSYNCED");
                     sDeviceMacTxt.setText(pairedDeviceMac);
-                    sDeviceNameTxt.setText(pairedDevice);
-                if(EDOGPSBoo) {
+                    sDeviceNameTxt.setText(pairedDevice);*/
+
+                //if(EDOGPSBoo) {
                     //Services Methods
-                    startGPSService();
-                    starBinder();
+                    //startGPSService();
+
+                Intent intent = new Intent(getApplicationContext(),SensorsService.class);
+                getApplicationContext().bindService(intent, snsServerConn, Context.BIND_AUTO_CREATE);
+
                     //DB Saver
-                    startRepeating();
-                    tss=ts;
-                }else {
-                    Toast.makeText(getApplicationContext(), "GPS & Snsrs serv not started", Toast.LENGTH_LONG).show(); }
+                   // startRepeating();
+
+                //}else {
+                    Toast.makeText(getApplicationContext(), "Services started", Toast.LENGTH_LONG).show();
 
             }
         });
         sUnbindBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), CowService.class);
+                Intent intent = new Intent(getApplicationContext(), CowService.class);
+
+              //  Intent sensintent=new Intent(getActivity(),SensorsService.class);
+               // getApplicationContext().stopService(sensintent);
                 if(sBound) {
-                    getActivity().unbindService(sServerConn);
+                   //getApplicationContext().unbindService(sServerConn);
+                   getApplicationContext().unbindService(snsServerConn);
                     //disposable.clear(); // do not send event after activity has been destroyed
-                    disposable.dispose();
+                    if(disposable!=null)
+                        disposable.dispose();
                     sStatusTxt.setText(DISCONNECTED);
                     sBound=false;
-                    stopRepeating();
+  //                  stopRepeating();
                 }
             }
         });
@@ -411,7 +375,7 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         }
     }
 
-
+    //CowService Connection
     protected ServiceConnection sServerConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -511,16 +475,6 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
 
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
@@ -532,170 +486,30 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         getApplicationContext().startService(gpsintent);
     }
 
-    private void starBinder() {
+    private void startBinder() {
         Intent intent = new Intent(getApplicationContext(),SensorsService.class);
         getApplicationContext().bindService(intent, snsServerConn, Context.BIND_AUTO_CREATE);
-        Intent sintent = new Intent(getApplicationContext(),GpsDataService.class);
-        getApplicationContext().bindService(sintent,gServerConn, Context.BIND_AUTO_CREATE);
+       // Intent sintent = new Intent(getApplicationContext(),GpsDataService.class);
+        //getApplicationContext().bindService(sintent,gServerConn, Context.BIND_AUTO_CREATE);
     }
 
+    //Sensors Service Connection
     protected ServiceConnection snsServerConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             SensorsService.SensBinder snsbinder = (SensorsService.SensBinder) service;
-            sensorserv = snsbinder.getService();
+            sensorsService = snsbinder.getService();
+            //sensorsService.startRepeating();
             sBound = true;
-            Log.d(TAG, "onSensorsServiceConnected");}
+            Log.d(TAG, "onSensorsServiceConnected");
+
+        }
         @Override
         public void onServiceDisconnected(ComponentName name) {
             sBound = false;
             Log.d(TAG, "onSensorsServiceDisconnected"); }};
 
-    protected ServiceConnection gServerConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            GpsDataService.GPSBinder gpsbinder = (GpsDataService.GPSBinder) service;
-            gpsapp = gpsbinder.getService();
-            sBound = true;
-            Log.d(TAG, "onGPSServiceConnected");}
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            sBound = false;
-            Log.d(TAG, "onGPSServiceDisconnected"); }};
 
-    public void startRepeating() {
 
-            mToastRunnable.run();
-            Toast.makeText(getApplicationContext(), "Guardando Datos, Cada " + dly + " Segundos", (int) (dly * 1000)).show();
-        /*
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date date = new Date();
-            fecha = dateFormat.format(date);*/
-
-    }
-
-    private Runnable mToastRunnable = new Runnable() {
-
-        String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-        String fileName =(getDateString()+"_DBPrueba"+".csv");
-        String filePath = baseDir + File.separator + fileName;
-        File f = new File(filePath );
-        @Override
-        public void run() {
-            final MantBDD mantBDD = new MantBDD(getApplicationContext());
-            TS =sensorserv.getTs();
-            VAX=String.valueOf(sensorserv.getVAX());
-            VAY=String.valueOf(sensorserv.getVAY());
-            VAZ=String.valueOf(sensorserv.getVAZ());
-            VGX=String.valueOf(sensorserv.getVGX());
-            VGY=String.valueOf(sensorserv.getVGY());
-            VGZ=String.valueOf(sensorserv.getVGZ());
-            AGX=String.valueOf(sensorserv.getAX());
-            AGY=String.valueOf(sensorserv.getAY());
-            AGZ=String.valueOf(sensorserv.getAZ());
-            ALT=String.valueOf(gpsapp.getNMEAAlt());
-            NOSts=String.valueOf(gpsapp.getNoSats());
-            //FC=String.valueOf(cowService.getFuleprom());
-
-            mantBDD.agregarCurso(TS,VAX, VAY, VAZ, VGX, VGY, VGZ, AGX, AGY, Speed, LAT, LOG, ALT, NOSts);
-            //float AX=sensorserv.getAX(); float AY=sensorserv.getAY(); float AZ=sensorserv.getAZ();
-
-            try {
-                // IF File exist
-                if (f.exists() && !f.isDirectory()) {
-                    mFileWriter = new FileWriter(filePath, true);
-                    DBCSVwriter = new CSVWriter(mFileWriter);
-                } else {
-                    DBCSVwriter = new CSVWriter(new FileWriter(filePath));
-                }
-                //String[] data = {"Ship Name","Scientist Name", "...",new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").formatter.format(date)});
-
-                String[] entries = new String[15];// array of your values
-                entries[0] = TS;entries[1] = VAX;entries[2] = VAY;entries[3] = VAZ;entries[4] = VGX;
-                entries[5] = VGY;entries[6] = VGZ;entries[7] = AGX;entries[8] = AGY;entries[9] = AGZ;
-                entries[10] = LAT;entries[11] = LOG;entries[12] = ALT;entries[13] = NOSts;entries[14] = Speed;
-                //entries[15] = FC;
-
-                String[] speedprm= new String[300];
-
-                DBCSVwriter.writeNext(entries);
-
-                DBCSVwriter.close();
-            }catch (IOException e)
-            {
-                //error
-            }
-            Double dlyto = 0.1;//Segundos
-            mHandler.postDelayed(this, (long) (dlyto * 1000));
-        }
-
-    };
-
-    public void stopRepeating() {
-        mHandler.removeCallbacks(mToastRunnable);
-        exportDatabse("BDDSensors");
-        stopGPSService();
-    }
-    private void stopGPSService() {
-        Intent serintent= new Intent(getApplicationContext(),GpsDataService.class);
-        getApplicationContext().stopService(serintent);
-        Intent sensintent=new Intent(getApplicationContext(),SensorsService.class);
-        getApplicationContext().stopService(sensintent);
-        if(sBound) {
-            getApplicationContext().unbindService(snsServerConn);
-            getApplicationContext().unbindService(gServerConn);
-            sBound=false;};
-    }
-    //Sql-Memory
-    public void exportDatabse(String BDDSensors) {
-        try {
-            File sd = Environment.getExternalStorageDirectory();
-            File data = Environment.getDataDirectory();
-            File sdDow = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS);
-
-            if (sd.canWrite()) {
-                String currentDBPath = "//data//" + getActivity().getPackageName() + "//databases//" + BDDSensors + "";
-                String backupDBPath = getDateString() + " backupBDD" + ".db";
-                File currentDB = new File(data, currentDBPath);
-                File backupDB = new File(sdDow, backupDBPath);
-                Toast.makeText(getApplicationContext(), "Guardando BDD", Toast.LENGTH_SHORT).show();
-
-                if (currentDB.exists()) {
-                    FileChannel src = new FileInputStream(currentDB).getChannel();
-                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-                }
-            }
-        } catch (Exception e) {
-        }
-    }
-
-    public String getDataline() {
-        return dataline;
-    }
-    public String getDateString() {
-        long tsLong;
-        tsLong = System.currentTimeMillis();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd_HHmm_ss_SSS");//"MMM dd,yyyy HH:mm:ss");
-        Date resultdate = new Date(tsLong);
-        String rsltDate = sdf.format(resultdate);
-        dateString2 = rsltDate;
-        return dateString2;
-    }
-
-    public String getTS() {
-        return TS;
-    }
-
-    public String getAGY() {
-        return AGY;
-    }
-
-    public boolean isEDOGPSBoo() {
-        return EDOGPSBoo;
-    }
 }

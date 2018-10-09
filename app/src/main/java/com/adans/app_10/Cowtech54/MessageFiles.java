@@ -22,15 +22,15 @@ import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiTh
  * Created by Wily on 13/04/2018.
  */
 
-public class BtMessageFiles {
-    private final String TAG = BtMessageFiles.class.getSimpleName();
+public class MessageFiles {
+    private final String TAG = MessageFiles.class.getSimpleName();
 
     private String folder = "";
     private String prefix = "";
     private String parentDirStr = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String filePathStr = parentDirStr + File.separator + prefix;
     private File parentDir;
-    private File f;
+    public File f;
     private FileWriter fileWriter;
     private CSVWriter csvWriter;
 
@@ -43,22 +43,22 @@ public class BtMessageFiles {
     private Context context;
     private TextView filePathText;
 
-    public BtMessageFiles() {
+    public MessageFiles() {
     }
 
-    public BtMessageFiles(String prefix) {
+    public MessageFiles(String prefix) {
         this.prefix = prefix;
         this.folder = "";
         this.timeGenerator = 5; //default time 5 min
     }
 
-    public BtMessageFiles(String prefix, String folder) {
+    public MessageFiles(String prefix, String folder) {
         this.prefix = prefix;
         this.folder = folder;
         this.timeGenerator = 5; //default time 5 min
     }
 
-    public BtMessageFiles(String prefix, String folder, int timeGenerator) {
+    public MessageFiles(String prefix, String folder, int timeGenerator) {
         this.prefix = prefix;
         this.folder = folder;
         this.timeGenerator = timeGenerator;

@@ -11,6 +11,10 @@
         android:fragment="com.adans.app_10.SettingsActivity$CowPreferenceFragment"
         android:title="COW preferences"
         android:summary="Paired dev, files configuration, modes"/>
+    <header
+        android:fragment="com.adans.app_10.SettingsActivity$SensorsPreferenceFragment"
+        android:title="Sensors preferences"
+        android:summary="Accelerometer, gyroscope and angles"/>
 
     <header
         android:fragment="com.adans.app_10.SettingsActivity$GeneralPreferenceFragment"

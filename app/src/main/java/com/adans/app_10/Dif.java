@@ -7,7 +7,7 @@ public class Dif {
 
     public static double[] Deltas(double[] velInterp, double[] timeRPM) {
         double[] AcelInter=new double[velInterp.length];
-        for (int i=0;i<=velInterp.length-5;i++){
+        for (int i=0;i<=velInterp.length-2;i++){
             AcelInter[i]=((velInterp[i+1]-velInterp[i])/(timeRPM[i+1]-timeRPM[i]));
 
         }

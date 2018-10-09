@@ -3,7 +3,12 @@ package com.adans.app_10.Cowtech54;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
+import com.adans.app_10.Cowtech54.Util;
+import com.adans.app_10.Dif;
+
+import static com.adans.app_10.Cowtech54.Util.linked2Array;
 
 /**
  * Created by Wily on 09/03/2018.
@@ -43,6 +48,12 @@ public class BtMessageManager {
     public int recIDs=0;
     public static String MessagePurged = "";
     public static String MessagePurgedCopy = "";
+
+    //For algorithms
+    public LinkedList<Number> timeVel;
+    public LinkedList<Number> vel;
+    public LinkedList<Number> timeRPM;
+    public LinkedList<Number> RPM;
 
     CowTabFragment1 CowFac1=new CowTabFragment1();
 
@@ -159,6 +170,43 @@ public class BtMessageManager {
                     }
                 }
 
+                //ADAS algorithms
+                int numSamples = 30;
+                int timeSample = 5; //Seconds
+
+                double timePeriodVel = 0;
+                if((int)currentIDNum == 2037){
+                    timeVel.add(IDtram[0]);
+                    vel.add(IDtram[3]);
+                    if(timeVel.size()>2)
+                        timePeriodVel = (double)timeVel.getLast() - (double)timeVel.getFirst();
+                }
+                if((int)currentIDNum == 2037) {
+                    timeRPM.add(IDtram[0]);
+                    RPM.add(IDtram[3]);
+                }
+
+                //Init arrays for algorithms
+                double[] timeVel_ = new double[timeVel.size()];
+                double[] timeRPM_ = new double[timeRPM.size()];
+                double[] vel_ = new double[vel.size()];
+                double[] RPM_ = new double[RPM.size()];
+
+                double[] velAtRPM = new double[RPM.size()];
+                double[] acel = velAtRPM;
+
+                if(timePeriodVel >= timeSample){
+                    timeVel_= linked2Array(timeVel, timeVel_ );
+                    timeRPM_=linked2Array(timeRPM, timeRPM_ );
+                    vel_=linked2Array(vel, vel_ );
+                    RPM_=linked2Array(RPM, RPM_ );
+
+                    velAtRPM = Util.interpLinear(timeVel_,vel_,timeRPM_);
+                    acel = Dif.Deltas(velAtRPM, timeRPM_);
+
+                }
+
+
                 recIDs++;
             }else{
                 if(messageSplitStr[i].length()>1)lostIDs++;
@@ -172,6 +220,7 @@ public class BtMessageManager {
     }
 
     //========
+
 
 
     public static ArrayList<String> getIndivIDs2Str(String StrMsg){

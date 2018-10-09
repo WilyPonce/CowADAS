@@ -10,12 +10,12 @@
     <string name="title_activity_location">Location</string>
 
 
-    <string name="drawer_item_main">Principal</string>
+    <string name="drawer_item_main">Home</string>
     <string name="drawer_item_profile">Perfil</string>
     <string name="drawer_item_records">Registros</string>
     <string name="drawer_item_statistics">Estadísticas</string>
     <string name="drawer_item_healt">Información de salud</string>
-    <string name="drawer_item_settinds">Configuración</string>
+    <string name="drawer_item_settinds">Settings</string>
     <string name="drawer_item_about">Acerca de Nosotros</string>
 
     <!-- Strings related to Settings -->

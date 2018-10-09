@@ -6,7 +6,11 @@ package com.adans.app_10.Cowtech54;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.Locale;
 
 
 /**
@@ -150,5 +154,36 @@ public class Util{
         }
 
         return interpLinear(xd, y, xid);
+    }
+
+    public String getDateString(String format) {
+        long tsLong;
+        tsLong = System.currentTimeMillis();
+        SimpleDateFormat sdf;
+        if(format.equals("long"))
+           sdf = new SimpleDateFormat("yyMMdd_HHmm_ss_SSS");//"MMM dd,yyyy HH:mm:ss");
+        else
+            sdf = new SimpleDateFormat("yyMMdd", Locale.FRANCE);
+        Date resultdate = new Date(tsLong);
+        String rsltDate = sdf.format(resultdate);
+        return rsltDate;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
+    // Linked list to array
+    public static double[] linked2Array(LinkedList<Number> linkedList, double[] array){
+        int arrSize = array.length;
+        for(int i=0; i < arrSize; i++){
+            array[i] = (double)linkedList.get(i);
+        }
+        return array;
     }
 }

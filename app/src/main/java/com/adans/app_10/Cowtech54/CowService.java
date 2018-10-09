@@ -63,7 +63,7 @@ public class CowService extends Service{
     public BtMessageManager btMessageManager;
 
     //Initilizing CSV File
-    public BtMessageFiles fileCSV;
+    public MessageFiles fileCSV;
 
     //Preferences
     private SharedPreferences sharedPref;
@@ -94,11 +94,11 @@ public class CowService extends Service{
         return deviceConnected;
     }
 
-    public BtMessageFiles getFileCSV() {
+    public MessageFiles getFileCSV() {
         return fileCSV;
     }
 
-    public void setFileCSV(BtMessageFiles fileCSV) {
+    public void setFileCSV(MessageFiles fileCSV) {
         this.fileCSV = fileCSV;
     }
 
@@ -131,76 +131,88 @@ public class CowService extends Service{
         btMessageManager = new BtMessageManager();
 
         //Init filcsv
-        initBtMessageFiles();
+        initMessageFiles();
 
         //Update the paired device textview
         deviceMac = sharedPref.getString("cow_paired_mac", "Not synced");
         deviceName = sharedPref.getString("cow_paired_name", "Not synced");
 
-        //Load device and connect
-        bluetoothConnectThread(deviceMac,  deviceName);
-//        bluetoothConnectThread("98:D3:32:20:E2:08",  "COW");
+        if(!deviceMac.contains(":")) {
+            Toast.makeText(getBaseContext(), "Select BT Device first", Toast.LENGTH_SHORT).show();
+            onDestroy();
+        }
+        else {
+            //Load device and connect
 
-        //Intent filter for BlueTooth status receiver
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        this.registerReceiver(mReceiver, filter);
+            bluetoothConnectThread(deviceMac,  deviceName);
+    //        bluetoothConnectThread("98:D3:32:20:E2:08",  "COW");
 
-        mHandler = new Handler(){
-            public void handleMessage(Message msg){
-                if(msg.what == MESSAGE_READ){
-                    String readMessage = null;
-                    try {
-                        readMessage = new String((byte[]) msg.obj, "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-
-                    //TODO string. substring( string.length()+1)   if equals ] then it is ok
-                    btMessageManager.addNewMessage(readMessage);
-
-                    //Using Copy to avoid conflict while saving in file
-                    if(fileCSV!=null)
-                        fileCSV.writeInFile(btMessageManager.getMessagePurgedCopy());
-                    //mReadBuffer.setText(readMessage);
-
-
-                    //Send to tue UI activity through Observer
-                    if(stringObserver!=null){
-                        String fileStr = "";
-                        if(fileCSV!=null)
-                            fileStr = fileCSV.getFilePathStr();
-                        String lat = btMessageManager.MatIDs.get(2222).getByte5().getLast().toString();
-                        String lon = btMessageManager.MatIDs.get(2222).getByte6().getLast().toString();
-                        String sat = btMessageManager.MatIDs.get(2222).getByte1().getLast().toString();
-                        myEmitter[0] = deviceConnectedStr;
-                        myEmitter[1] = fileStr;
-                        myEmitter[2] = lat;
-                        myEmitter[3] = lon;
-                        myEmitter[4] = sat;
-
-                        stringObserver.onNext(myEmitter);
-                    }
-                }
-
-                if(msg.what == CONNECTING_STATUS){
-                    if(msg.arg1 == 1)
-                        Log.d(TAG,"Connected to device: " + (String)(msg.obj));
-                        // mBluetoothStatus.setText("Connected to Device: " + (String)(msg.obj));
-                    else {
-                        Log.d(TAG, "Connection Fialed");
-                        Toast.makeText(getBaseContext(), "Connection failed", Toast.LENGTH_SHORT).show();
-                        if(cConnectedThread!=null) //If there is a Connected Thread initilized
-                            cConnectedThread.cancel();
-                        fileCSV.stopFiles();
-                        mHandler.removeCallbacks(cConnectedThread); //Remove possible conflicts
-                    }
-                        //mBluetoothStatus.setText("Connection Failed");
-                }
+            //Intent filter for BlueTooth status receiver
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+            filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            if(mReceiver == null) {
+                Toast.makeText(getBaseContext(), "Select BT Device first", Toast.LENGTH_SHORT).show();
+                onDestroy();
             }
-        };
+
+            this.registerReceiver(mReceiver, filter);
+
+            mHandler = new Handler(){
+                public void handleMessage(Message msg){
+                    if(msg.what == MESSAGE_READ){
+                        String readMessage = null;
+                        try {
+                            readMessage = new String((byte[]) msg.obj, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+
+                        //TODO string. substring( string.length()+1)   if equals ] then it is ok
+                        btMessageManager.addNewMessage(readMessage);
+
+                        //Using Copy to avoid conflict while saving in file
+                        if(fileCSV!=null)
+                            fileCSV.writeInFile(btMessageManager.getMessagePurgedCopy());
+                        //mReadBuffer.setText(readMessage);
+
+
+                        //Send to tue UI activity through Observer
+                        if(stringObserver!=null){
+                            String fileStr = "";
+                            if(fileCSV!=null)
+                                fileStr = fileCSV.getFilePathStr();
+                            String lat = btMessageManager.MatIDs.get(2222).getByte5().getLast().toString();
+                            String lon = btMessageManager.MatIDs.get(2222).getByte6().getLast().toString();
+                            String sat = btMessageManager.MatIDs.get(2222).getByte1().getLast().toString();
+                            myEmitter[0] = deviceConnectedStr;
+                            myEmitter[1] = fileStr;
+                            myEmitter[2] = lat;
+                            myEmitter[3] = lon;
+                            myEmitter[4] = sat;
+
+                            stringObserver.onNext(myEmitter);
+                        }
+                    }
+
+                    if(msg.what == CONNECTING_STATUS){
+                        if(msg.arg1 == 1)
+                            Log.d(TAG,"Connected to device: " + (String)(msg.obj));
+                            // mBluetoothStatus.setText("Connected to Device: " + (String)(msg.obj));
+                        else {
+                            Log.d(TAG, "Connection Fialed");
+                            Toast.makeText(getBaseContext(), "Connection failed", Toast.LENGTH_SHORT).show();
+                            if(cConnectedThread!=null) //If there is a Connected Thread initilized
+                                cConnectedThread.cancel();
+                            fileCSV.stopFiles();
+                            mHandler.removeCallbacks(cConnectedThread); //Remove possible conflicts
+                        }
+                            //mBluetoothStatus.setText("Connection Failed");
+                    }
+                }
+            };
+        }
     }
 
     //RxJava Observable
@@ -219,41 +231,26 @@ public class CowService extends Service{
         sendBroadcast(new_intent);
     }
 
-    public void initBtMessageFiles(){
+    public void initMessageFiles(){
         //Initilizing CSV File with stored preferences
         String extStore = System.getenv("EXTERNAL_STORAGE");
         File f_exts = new File(extStore);
 
-        String dirStr = f_exts.getAbsolutePath() + File.separator + getResources().getString(R.string.app_name);
-
-        /*String defaultString = getResources().getString(R.string.folder_string_default);
-        String folderStr = sharedPref.getString(getString(R.string.folder_string), defaultString);
-
-        defaultString = getResources().getString(R.string.prefix_string_default);
-        String prefixStr = sharedPref.getString(getString(R.string.prefix_string), defaultString);
-
-        int defaultInt = 5; //5 min of def
-        int timeFileGenerator = sharedPref.getInt(getString(R.string.update_time_file), defaultInt);
-       */
+        String dirStr = f_exts.getAbsolutePath() + File.separator + "CowSync";  //getResources().getString(R.string.app_name);
 
         String prefixStr;
         String folderStr;
         int timeFileGenerator;
 
-        prefixStr = sharedPref.getString("cow_file_prefix", "WPQ");
-        folderStr = sharedPref.getString("cow_folder","CTLogsWPQ");
-        timeFileGenerator = Integer.valueOf(sharedPref.getString("cow_period_files", "3" ));
+        prefixStr = sharedPref.getString("cow_file_prefix", "ADAS");
+        folderStr = sharedPref.getString("cow_folder",getResources().getString(R.string.app_name));
+        timeFileGenerator = Integer.valueOf(sharedPref.getString("cow_period_files", "5" ));
 
-        fileCSV = new BtMessageFiles(prefixStr, folderStr);
+        fileCSV = new MessageFiles(prefixStr, folderStr);
         fileCSV.setParentDirStr(dirStr);
         //fileCSV.setFilePathTextView(filePathTxt);
         fileCSV.initTimerGenerator(timeFileGenerator);
 
-        //Upd UI
-        /*newTimeStatusTxt.setText(Integer.toString(timeFileGenerator));
-        updateTimeTxt.setText(Integer.toString(timeFileGenerator));
-        folderTxt.setText(folderStr);
-        prefixTxt.setText(prefixStr);*/
     }
 
     //The BroadcastReceiver that listens for bluetooth broadcasts
@@ -454,7 +451,8 @@ public class CowService extends Service{
         if(cConnectedThread!=null) //If there is a Connected Thread initilized
             cConnectedThread.cancel();
         fileCSV.stopFiles();
-        mHandler.removeCallbacks(cConnectedThread); //Remove possible conflicts
+        if(mHandler!=null)
+            mHandler.removeCallbacks(cConnectedThread); //Remove possible conflicts
         super.onDestroy();
         //deviceConnected = false; //make sure it is false
     }

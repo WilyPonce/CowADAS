@@ -1,7 +1,10 @@
 package com.adans.app_10;
 
+import android.Manifest;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -10,9 +13,11 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 
 
-public class GpsDataService extends Service implements LocationListener,GpsStatus.Listener {
+public class GpsDataService extends Service implements LocationListener, GpsStatus.Listener {
 
     private final IBinder cBinder = new GPSBinder();
 
@@ -40,15 +45,35 @@ public class GpsDataService extends Service implements LocationListener,GpsStatu
 
 
     //Cadena del GPS;
-    String C1,C2,C3,C4,C5,C6,C7,C8,C9;
+    String C1, C2, C3, C4, C5, C6, C7, C8, C9;
     private String InfoGPS;
 
     @Override
-    public void onCreate () {
+    public void onCreate() {
         super.onCreate();
 
         mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mLocationManager.addNmeaListener(mNmeaListener);
+
+
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setCostAllowed(false);
+        String providerName = mLocationManager.getBestProvider(criteria, true);
+        Log.d("GPSServ", providerName);
+
+        mLocationManager.requestLocationUpdates(providerName, (long) (0.1 * 1000), 1, this);
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, (long) (0.1 * 1000), 1, this);
 
     }
 

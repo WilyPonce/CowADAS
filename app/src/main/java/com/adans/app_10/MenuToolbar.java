@@ -96,13 +96,13 @@ public class MenuToolbar extends AppCompatActivity {
                 .build();
         //if you want to update the items at a later time it is recommended to keep it in a variable
         final PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName(R.string.drawer_item_main).withIcon(GoogleMaterial.Icon.gmd_accessibility);
-        PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName(R.string.drawer_item_profile).withIcon(GoogleMaterial.Icon.gmd_account_balance);
-        PrimaryDrawerItem item3 = new PrimaryDrawerItem().withIdentifier(3).withName(R.string.drawer_item_records).withIcon(GoogleMaterial.Icon.gmd_add_to_photos);
-        PrimaryDrawerItem item4 = new PrimaryDrawerItem().withIdentifier(4).withName(R.string.drawer_item_statistics).withIcon(GoogleMaterial.Icon.gmd_adb);
+//        PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName(R.string.drawer_item_profile).withIcon(GoogleMaterial.Icon.gmd_account_balance);
+//        PrimaryDrawerItem item3 = new PrimaryDrawerItem().withIdentifier(3).withName(R.string.drawer_item_records).withIcon(GoogleMaterial.Icon.gmd_add_to_photos);
+//        PrimaryDrawerItem item4 = new PrimaryDrawerItem().withIdentifier(4).withName(R.string.drawer_item_statistics).withIcon(GoogleMaterial.Icon.gmd_adb);
         PrimaryDrawerItem item5 = new PrimaryDrawerItem().withIdentifier(5).withName(R.string.drawer_item_bluetooth).withIcon(GoogleMaterial.Icon.gmd_attach_file);
         PrimaryDrawerItem item6 = new PrimaryDrawerItem().withIdentifier(6).withName(R.string.drawer_item_settinds).withIcon(GoogleMaterial.Icon.gmd_settings);
-        PrimaryDrawerItem item7 = new PrimaryDrawerItem().withIdentifier(7).withName(R.string.drawer_item_about).withIcon(GoogleMaterial.Icon.gmd_terrain);
-        PrimaryDrawerItem item8 = new PrimaryDrawerItem().withIdentifier(8).withName("Cowtech54").withIcon(R.mipmap.ic_cow_black_nbg);
+//        PrimaryDrawerItem item7 = new PrimaryDrawerItem().withIdentifier(7).withName(R.string.drawer_item_about).withIcon(GoogleMaterial.Icon.gmd_terrain);
+        PrimaryDrawerItem item8 = new PrimaryDrawerItem().withIdentifier(8).withName("CowADAS").withIcon(R.mipmap.ic_cow_black_nbg);
 
         new DrawerBuilder()
                 .withAccountHeader(headerResult)
@@ -112,14 +112,10 @@ public class MenuToolbar extends AppCompatActivity {
                 .withActionBarDrawerToggleAnimated(true)
                 .addDrawerItems(
                         item1,
-                        item2,
-                        item3,
-                        item4,
-                        item5,
+                        item8,
                         new DividerDrawerItem(),
-                        item6,
-                        item7,
-                        item8
+                        item5,
+                        item6
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -130,7 +126,7 @@ public class MenuToolbar extends AppCompatActivity {
                             startActivity(intent);
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
                         }
-                        if (position == 2) {
+                      /*  if (position == 2) {
                             Intent intent = new Intent(context, PerfilAct.class);
                             startActivity(intent);
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
@@ -141,22 +137,22 @@ public class MenuToolbar extends AppCompatActivity {
                             Log.d(" TAG" , "Statistics opened");
 
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
-                        }
-                        if (position == 5){
+                        }*/
+                        if (position == 3 + 1){
                             Intent intent = new Intent(context, Bluetooth.class);
                             startActivity(intent);
                             Log.d(" TAG" , "BT opened");
 
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
                         }
-                        if(position == 6 + 1){
+                        if(position == 3 + 2){
                             Intent intent = new Intent(context, SettingsActivity.class);
                             startActivity(intent);
                             Log.d("TAG" , "Settings opened");
 
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
                         }
-                        if(position == 8 + 1){
+                        if(position == 2){
                             Intent intent = new Intent(context, CowTabActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             startActivityIfNeeded(intent, 0);

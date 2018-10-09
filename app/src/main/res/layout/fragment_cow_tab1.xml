@@ -197,7 +197,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight=".6"
                 android:ellipsize="end"
-                android:text="YY/MM/DD HH:mm:ss" />
+                android:text="YY/MM/DD HH:mm:ss"
+                android:visibility="invisible" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -276,7 +277,7 @@
             android:id="@+id/tvEdoGPSFrac"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gps not available" />
+            android:text="Gps" />
 
         <Button
             android:id="@+id/cowTab1StartBtn"
