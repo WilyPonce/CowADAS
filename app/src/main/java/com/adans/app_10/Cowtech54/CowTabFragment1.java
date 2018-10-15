@@ -12,8 +12,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -27,30 +25,15 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adans.app_10.GasYEmisAct;
 import com.adans.app_10.GpsDataService;
-import com.adans.app_10.MantBDD;
+import com.adans.app_10.PruebaAct;
 import com.adans.app_10.R;
-import com.adans.app_10.SensorsService;
-import com.opencsv.CSVWriter;
 
-import org.apache.poi.ss.formula.eval.StringValueEval;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-import static android.os.Environment.DIRECTORY_DOWNLOADS;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
@@ -290,12 +273,17 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         sUpdateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(sBound){
-                    String filePathStr;
+
+                    /*String filePathStr;
+                    if(isBound){
                     filePathStr = cowService.getFileCSV().getFilePathStr();
                     String byteFirst = cowService.btMessageManager.MatIDs.get(2222).getByte1().getFirst().toString();
                     Toast.makeText(getActivity().getApplicationContext(), byteFirst, Toast.LENGTH_LONG).show();
-                }
+                    }*/
+                    Toast.makeText(getApplicationContext(), "Test gps act", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(getActivity().getApplicationContext(), SensorsActivity.class);
+                    startActivity(intent);
+
             }
         });
 
@@ -498,7 +486,7 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            SensorsService.SensBinder snsbinder = (SensorsService.SensBinder) service;
+            SensorsService.SensorsBinder snsbinder = (SensorsService.SensorsBinder) service;
             sensorsService = snsbinder.getService();
             //sensorsService.startRepeating();
             sBound = true;

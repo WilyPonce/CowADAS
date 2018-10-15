@@ -17,7 +17,14 @@
         android:key="connection_gps"
         android:title="GPS"
         android:summary="(Not actual GPS state)"/>
-
+    <SwitchPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="true"
+        android:icon="@drawable/pref_ic_gps"
+        android:key="switch_preference_1"
+        android:summary="(test)"
+        android:title="GPS activity" />
 
 
 </PreferenceScreen>

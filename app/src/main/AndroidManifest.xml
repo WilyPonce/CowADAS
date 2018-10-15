@@ -43,7 +43,7 @@
             android:screenOrientation="portrait" />
         <activity android:name=".GasYEmisAct" />
 
-        <service android:name=".SensorsService" />
+        <service android:name=".Cowtech54.SensorsService" />
         <service android:name=".GpsDataService" />
 
         <activity android:name=".IndicacionesAct" />
@@ -71,7 +71,11 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
-        <activity android:name=".VehicleRegAct"></activity>
+        <activity android:name=".VehicleRegAct" />
+        <activity
+            android:name=".Cowtech54.SensorsActivity"
+            android:label="@string/title_activity_sensors"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

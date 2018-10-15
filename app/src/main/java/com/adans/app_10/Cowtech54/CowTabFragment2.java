@@ -13,12 +13,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.adans.app_10.R;
 import com.adans.app_10.Dif;
-import com.adans.app_10.SensorsService;
 
 import java.text.DecimalFormat;
 
@@ -82,12 +80,13 @@ public class CowTabFragment2 extends Fragment {
     double FuleProm;
     double[] EmisAry;
 
+    private Handler nHandler = new Handler();
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    private Handler nHandler = new Handler();
 
     private OnFragmentInteractionListener mListener;
 
@@ -273,15 +272,8 @@ public class CowTabFragment2 extends Fragment {
     }
 
     private void Interp() {
-        //private double[]
-        //double[] arrTsVel, double[] arrVel, double[] arrTsRPM, double[] arrRPM, double tmax, double tmin
 
-        /*double Tlaps=tmax-tmin;
-        int numCas= (int) (Tlaps/100);
-        double[] TimeV= new double[numCas];
-        for (int cv=0;cv<numCas;cv++) {
-            TimeV[cv]=tmin+100;
-        }
+/*
         VelInterp=Util.interpLinear(arrTsVel,arrVel,TimeV);
         IncInterp=Util.interpLinear(arrTsRPM,arrRPM,TimeV);*/
 

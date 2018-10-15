@@ -1,13 +1,20 @@
-package com.adans.app_10;
+package com.adans.app_10.Cowtech54;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.GpsStatus;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -15,21 +22,23 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.adans.app_10.Cowtech54.CowService;
-import com.adans.app_10.Cowtech54.MessageFiles;
+import com.adans.app_10.R;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+
 import static com.adans.app_10.Cowtech54.Util.round;
 
-public class SensorsService extends Service implements SensorEventListener{
+public class SensorsService extends Service implements SensorEventListener,LocationListener,GpsStatus.Listener{
 
     private final String TAG = SensorsService.class.getSimpleName();
 
-    private final IBinder cBinder = new SensBinder();
+    private final IBinder cBinder = new SensorsBinder();
 
 
     float AX, AY, AZ, GX, GY, GZ, AnX, AnY, AnZ;
@@ -46,6 +55,15 @@ public class SensorsService extends Service implements SensorEventListener{
     float pitch;
     float roll;
 
+    //GPS  Var Velocida
+    double Speed;
+    double LON = 0.0;
+    double LAT = 0.0;
+    int NoSats; //No. de satelites
+    int LocAltitude;
+    LocationManager locationManager;
+    boolean isGPSavailable = false;
+
     //Sampling time step
     Double dly = 0.1;
 
@@ -61,6 +79,11 @@ public class SensorsService extends Service implements SensorEventListener{
     //Preferences
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
+
+    //Emmitter for obsever
+    private ObservableEmitter<String[]> stringObserver;
+    private Observable<String[]> stringObservable;
+    private String[] mySensorsEmmiter = new String[12];
 
     @Override
     public void onCreate (){
@@ -106,10 +129,28 @@ public class SensorsService extends Service implements SensorEventListener{
         //Message files init creating the folders, prefixis and time generetor
         initMessageFiles(sensorsCSV);
 
+        //START GETTING GPS LOC
+        getLocation();
+
         startRepeating();
 
     }
-    public class SensBinder extends Binder {
+
+    //RxJava Observable
+    public Observable<String[]> observeString(){
+        if(stringObservable== null) {
+            stringObservable = Observable.create(emitter -> stringObserver = emitter);
+            stringObservable = stringObservable.share();
+        }
+        return stringObservable;
+    }
+
+    @Override
+    public void onGpsStatusChanged(int i) {
+
+    }
+
+    public class SensorsBinder extends Binder {
         public SensorsService getService() {return SensorsService.this;}
     }
 
@@ -184,6 +225,24 @@ public class SensorsService extends Service implements SensorEventListener{
             accels = null; ////retrigger the loop when things are repopulated
         }
 
+        if(stringObserver!=null){
+
+            mySensorsEmmiter[0] = AX_s;
+            mySensorsEmmiter[1] = AY_s;
+            mySensorsEmmiter[2] = AZ_s;
+            mySensorsEmmiter[3] = GX_s;
+            mySensorsEmmiter[4] = GY_s;
+            mySensorsEmmiter[5] = GZ_s;
+            mySensorsEmmiter[6] = AnX_s;
+            mySensorsEmmiter[7] = AnY_s;
+            mySensorsEmmiter[8] = AnZ_s;
+            mySensorsEmmiter[9] = String.valueOf(LAT);
+            mySensorsEmmiter[10] = String.valueOf(LON);
+            mySensorsEmmiter[11] = String.valueOf(NoSats);
+
+            stringObserver.onNext(mySensorsEmmiter);
+        }
+
     }
 
     public void startRepeating() {
@@ -219,7 +278,7 @@ public class SensorsService extends Service implements SensorEventListener{
             boolean angEnabled = sharedPref.getBoolean("sensor_ang_pref",true);
 
             if(sensorsCSV!=null && sensorsEnabled && sensorsCSV.f != null) {
-
+                //CSV file entries
                 String entries;
                 entries = "" + i;
                 i = round(i + 0.1,1);  //time in ms
@@ -229,6 +288,8 @@ public class SensorsService extends Service implements SensorEventListener{
                     entries = entries + GX_s + GY_s + GZ_s;
                 if(angEnabled)
                     entries = entries + AnX_s + AnY_s + AnZ_s;
+                if(isGPSavailable)
+                    entries = entries + "\t" + LAT + "\t" + LON;
 
                     sensorsCSV.writeInFile(entries);
                     // Log.d(TAG, "Writing in file");
@@ -353,5 +414,64 @@ public class SensorsService extends Service implements SensorEventListener{
             sensHandler.removeCallbacks(sensorsRunnable); //Remove possible conflicts
         super.onDestroy();
         //deviceConnected = false; //make sure it is false
+    }
+
+    //////
+    void getLocation() {
+
+        try {
+            // Retrieve a list of location providers that have fine accuracy, no monetary cost, etc
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setCostAllowed(false);
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            String providerName = locationManager.getBestProvider(criteria, true);
+            Log.d("PruebAct", "Provider by (network/gps): " + providerName);
+
+            // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) (dly * 1000), 1, this);
+            locationManager.requestLocationUpdates(providerName, (long) (dly * 1000), 1, this);
+
+            //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, (long) (0.1 * 1000), 1, this);
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+
+    }
+    ///////
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+        LAT = location.getLatitude();
+        LON = location.getLongitude();
+
+       // textLat.setText(String.valueOf(LAT));
+       // textLon.setText(String.valueOf(LON));
+
+        LocAltitude=0; //gpsapp.getNoSats();
+
+        //tvEdoGPS.setText("Conexión con GPS Disponible");
+        //EDOGPSBoo = true;
+
+        isGPSavailable = true;
+
+        Speed= location.getSpeed();
+
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }

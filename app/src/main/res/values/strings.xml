@@ -103,6 +103,7 @@
     <string name="facebook_app_id">593253451027552</string>
     <string name="facebook_login_protocol_scheme">fb593253451027552></string>
     <string name="drawer_item_bluetooth">Bluetooth device set</string>
+    <string name="title_activity_sensors">SensorsActivity</string>
 
 
 </resources>

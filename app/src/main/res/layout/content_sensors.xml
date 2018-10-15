@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".Cowtech54.SensorsActivity"
+    tools:showIn="@layout/activity_sensors">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Latitude" />
+
+        <TextView
+            android:id="@+id/latText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="20dp"
+            android:text="Gps" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Longitude" />
+
+        <TextView
+            android:id="@+id/lonText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="20dp"
+            android:text="Gps" />
+
+
+
+        <!--=== === File === ===-->
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text=""
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="X"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="Y"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="Z"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text="Acc"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="0"
+                    android:id="@+id/accXText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/accYText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/accZText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text="Gyr"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="0"
+                    android:id="@+id/gyrXText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/gyrYText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/gyrZText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text="Ang"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="0"
+                    android:id="@+id/angXText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/angYText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/angZText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="x" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="y" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="z" />
+
+        </LinearLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

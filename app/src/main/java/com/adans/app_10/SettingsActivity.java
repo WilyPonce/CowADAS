@@ -445,6 +445,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         startActivity(intent);
                     }
 
+                    if(key.equals("gps_activity")){
+
+                        //TODO: Actually show the actual state of the GPS
+                        Intent intent = new Intent(getApplicationContext() , PruebaAct.class);
+                        startActivity(intent);
+                    }
+
                     if(key.equals("sensor_enable_pref")){
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                         boolean sensorEn;
