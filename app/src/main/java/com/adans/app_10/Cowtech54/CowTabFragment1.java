@@ -25,8 +25,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adans.app_10.GpsDataService;
-import com.adans.app_10.PruebaAct;
 import com.adans.app_10.R;
 
 import java.util.Calendar;
@@ -55,9 +53,8 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
     CowService.CowBinder cowBinder;
     //    private ContentTestBinding binding; //See https://developer.android.com/topic/libraries/data-binding/
     Disposable disposable; //stackoverflow.com/questions/14695537/android-update-activity-ui-from-service
-    Disposable disposable2;
     //   IBinder cowBinder;
-    boolean sBound = false;
+    public boolean sBound;
 
     // GUI Components
     CheckBox btRadio, sdRadio, lvRadio, obdRadio, gpsCheckbox;
@@ -89,8 +86,6 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
     Double dly = 0.1;
     //Location Manager
     LocationManager lm;
-    //Instancia GPS App
-    GpsDataService gpsapp;
     //Instancia Sensores Servicio
     SensorsService sensorsService;
 
@@ -131,7 +126,7 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         editor = prefs.edit();
 
-        gpsapp = new GpsDataService();
+     //   gpsapp = new GpsDataService();
         sensorsService = new SensorsService();
 
 
@@ -219,34 +214,25 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         sBindBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CowTabFragment2.serviceStatusListener.onServiceStatusChange(true);
+
                 if(sBound) {
-//                    getActivity().unbindService(sServerConn);
-                    getApplicationContext().unbindService(snsServerConn);
+//
+                    unbindServices();
+
                     //disposable.clear(); // do not send event after activity has been destroyed
                     if(disposable!=null)
                         disposable.dispose();
                     sStatusTxt.setText(DISCONNECTED);
                     sBound=false;
                 }
-                    /*Intent intent = new Intent(getActivity(), CowService.class);
-                    getActivity().bindService(intent, sServerConn, Context.BIND_AUTO_CREATE);
 
-                    String pairedDeviceMac = prefs.getString("cow_paired_mac", "Not synced");
-                    String pairedDevice = prefs.getString("cow_paired_name", "COW_UNSYNCED");
-                    sDeviceMacTxt.setText(pairedDeviceMac);
-                    sDeviceNameTxt.setText(pairedDevice);*/
 
-                //if(EDOGPSBoo) {
-                    //Services Methods
-                    //startGPSService();
+                /*Intent intent = new Intent(getApplicationContext(),SensorsService.class);
+                getApplicationContext().bindService(intent, snsServerConn, Context.BIND_AUTO_CREATE);*/
+                startBinder();
 
-                Intent intent = new Intent(getApplicationContext(),SensorsService.class);
-                getApplicationContext().bindService(intent, snsServerConn, Context.BIND_AUTO_CREATE);
 
-                    //DB Saver
-                   // startRepeating();
-
-                //}else {
                     Toast.makeText(getApplicationContext(), "Services started", Toast.LENGTH_LONG).show();
 
             }
@@ -254,20 +240,19 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         sUnbindBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), CowService.class);
+                CowTabFragment2.serviceStatusListener.onServiceStatusChange(false);
 
-              //  Intent sensintent=new Intent(getActivity(),SensorsService.class);
-               // getApplicationContext().stopService(sensintent);
-                if(sBound) {
-                   //getApplicationContext().unbindService(sServerConn);
-                   getApplicationContext().unbindService(snsServerConn);
+                startBinder();//To make sure there is something binded
+                unbindServices();
+
+                Toast.makeText(getApplicationContext(), "Service Stopped", Toast.LENGTH_LONG).show();
+
                     //disposable.clear(); // do not send event after activity has been destroyed
                     if(disposable!=null)
                         disposable.dispose();
                     sStatusTxt.setText(DISCONNECTED);
                     sBound=false;
-  //                  stopRepeating();
-                }
+
             }
         });
         sUpdateBtn.setOnClickListener(new View.OnClickListener() {
@@ -364,7 +349,7 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
     }
 
     //CowService Connection
-    protected ServiceConnection sServerConn = new ServiceConnection() {
+    protected ServiceConnection cowServerConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
@@ -467,18 +452,19 @@ public class CowTabFragment1 extends Fragment implements View.OnClickListener, L
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-    private void startGPSService() {
-        Intent serintent= new Intent(getApplicationContext(),SensorsService.class);
-        getApplicationContext().startService(serintent);
-        Intent gpsintent=new Intent(getApplicationContext(),GpsDataService.class);
-        getApplicationContext().startService(gpsintent);
-    }
+
 
     private void startBinder() {
         Intent intent = new Intent(getApplicationContext(),SensorsService.class);
         getApplicationContext().bindService(intent, snsServerConn, Context.BIND_AUTO_CREATE);
-       // Intent sintent = new Intent(getApplicationContext(),GpsDataService.class);
-        //getApplicationContext().bindService(sintent,gServerConn, Context.BIND_AUTO_CREATE);
+        Intent cowintent = new Intent(getApplicationContext(),CowService.class);
+        getApplicationContext().bindService(cowintent,cowServerConn, Context.BIND_AUTO_CREATE);
+    }
+
+    private void unbindServices(){
+        startBinder();//To make sure there is something binded to unbind
+        getApplicationContext().unbindService(cowServerConn);
+        getApplicationContext().unbindService(snsServerConn);
     }
 
     //Sensors Service Connection

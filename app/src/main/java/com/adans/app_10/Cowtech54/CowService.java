@@ -191,6 +191,9 @@ public class CowService extends Service{
                             myEmitter[2] = lat;
                             myEmitter[3] = lon;
                             myEmitter[4] = sat;
+                            myEmitter[5] = String.valueOf(btMessageManager.getFuelConsum());
+                            myEmitter[6] = String.valueOf(btMessageManager.getEmissions());
+                            myEmitter[7] = String.valueOf(btMessageManager.getDrivingStyle());
 
                             stringObserver.onNext(myEmitter);
                         }
@@ -453,6 +456,8 @@ public class CowService extends Service{
         fileCSV.stopFiles();
         if(mHandler!=null)
             mHandler.removeCallbacks(cConnectedThread); //Remove possible conflicts
+
+        this.unregisterReceiver(mReceiver);
         super.onDestroy();
         //deviceConnected = false; //make sure it is false
     }

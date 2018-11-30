@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.adans.app_10.GpsDataService;
 import com.adans.app_10.R;
 
 import java.util.Date;
@@ -28,7 +27,7 @@ public class SensorsActivity extends AppCompatActivity {
     static final String TAG = SensorsActivity.class.getSimpleName();
 
     //tv y imageview Indicador;
-    TextView textLat, textLon;
+    TextView textLat, textLon, textSats, textSpeed;
     TextView textAccX, textAccY, textAccZ;
     TextView textAngX, textAngY, textAngZ;
     TextView textGyrX, textGyrY, textGyrZ;
@@ -45,8 +44,6 @@ public class SensorsActivity extends AppCompatActivity {
 
     //Boolean del Bind
     boolean sBound = false;
-    //Instancia GPS App
-    GpsDataService gpsapp;
     //Instancia Sensores Servicio
     SensorsService sensorsService;
     //Tiempo
@@ -74,6 +71,8 @@ public class SensorsActivity extends AppCompatActivity {
         textAngX = (TextView) findViewById(R.id.angXText);
         textAngY = (TextView) findViewById(R.id.angYText);
         textAngZ = (TextView) findViewById(R.id.angZText);
+        textSats = (TextView) findViewById(R.id.satsText);
+        textSpeed = (TextView) findViewById(R.id.speedText);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -142,6 +141,12 @@ public class SensorsActivity extends AppCompatActivity {
             disposable = sensorsService.observeString()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(string -> textLon.setText(string[10]));
+            disposable = sensorsService.observeString()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(string -> textSats.setText(string[11]));
+            disposable = sensorsService.observeString()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(string -> textSpeed.setText(string[12]));
                 //11 NoSats
         }
 

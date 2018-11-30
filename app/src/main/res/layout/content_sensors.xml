@@ -15,34 +15,75 @@
         android:padding="5dp"
         android:orientation="vertical">
 
-        <TextView
+
+        <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Latitude" />
+            android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/latText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingStart="20dp"
-            android:text="Gps" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Longitude" />
-
-        <TextView
-            android:id="@+id/lonText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingStart="20dp"
-            android:text="Gps" />
-
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text=""
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="LAT"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="LON"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="SATS"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="km/h"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:text="GPS"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:text="0"
+                    android:id="@+id/latText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/lonText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/satsText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="0"
+                    android:id="@+id/speedText"
+                    android:gravity="center"
+                    android:padding="3dip"
+                    android:layout_weight="1"/>
+            </TableRow>
+        </TableLayout>
 
 
         <!--=== === File === ===-->

@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.adans.app_10.R;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -59,7 +60,7 @@ public class SensorsService extends Service implements SensorEventListener,Locat
     double Speed;
     double LON = 0.0;
     double LAT = 0.0;
-    int NoSats; //No. de satelites
+    double speed = 0.0;
     int LocAltitude;
     LocationManager locationManager;
     boolean isGPSavailable = false;
@@ -83,7 +84,27 @@ public class SensorsService extends Service implements SensorEventListener,Locat
     //Emmitter for obsever
     private ObservableEmitter<String[]> stringObserver;
     private Observable<String[]> stringObservable;
-    private String[] mySensorsEmmiter = new String[12];
+    private String[] mySensorsEmmiter = new String[15];
+
+    //NmaLine
+    String NmaLine;
+    Double NMEAAlt;
+    private String InfoGPS;
+    int NoSats = 0;
+    String UTCDate;
+    String NMEALat;
+    String NMEALog;
+    //Cadena del GPS;
+    String C1, C2, C3, C4, C5, C6, C7, C8, C9;
+    //No sats
+    private GpsStatus.NmeaListener mNmeaListener = new GpsStatus.NmeaListener() {
+        @Override
+        public void onNmeaReceived(long timestamp, String nmea) {
+            parseNmeaString(nmea);
+            //Log.d(TAG, nmea);
+           // Log.d(TAG, "Nmea received");
+        }
+    };
 
     @Override
     public void onCreate (){
@@ -132,11 +153,12 @@ public class SensorsService extends Service implements SensorEventListener,Locat
         //START GETTING GPS LOC
         getLocation();
 
+
         startRepeating();
 
     }
 
-    //RxJava Observable
+    //RxJava Observable for listener activity
     public Observable<String[]> observeString(){
         if(stringObservable== null) {
             stringObservable = Observable.create(emitter -> stringObserver = emitter);
@@ -161,7 +183,7 @@ public class SensorsService extends Service implements SensorEventListener,Locat
         return cBinder;
     }
 
-
+        //'Loop'
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized (this) {
@@ -239,6 +261,8 @@ public class SensorsService extends Service implements SensorEventListener,Locat
             mySensorsEmmiter[9] = String.valueOf(LAT);
             mySensorsEmmiter[10] = String.valueOf(LON);
             mySensorsEmmiter[11] = String.valueOf(NoSats);
+            mySensorsEmmiter[12] = String.valueOf(speed);
+
 
             stringObserver.onNext(mySensorsEmmiter);
         }
@@ -262,7 +286,7 @@ public class SensorsService extends Service implements SensorEventListener,Locat
         double i= -0.1;
         @Override
         public void run() {
-            //final MantBDD mantBDD = new MantBDD(getApplicationContext());
+
             //NOSts=String.valueOf(gpsapp.getNoSats());
             //FC=String.valueOf(cowService.getFuleprom());
 
@@ -309,32 +333,7 @@ public class SensorsService extends Service implements SensorEventListener,Locat
         //stopGPSService();
     }
 
-    //Sql-Memory
-    /*public void exportDatabse(String BDDSensors) {
-        try {
-            File sd = Environment.getExternalStorageDirectory();
-            File data = Environment.getDataDirectory();
-            File sdDow = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS);
 
-            if (sd.canWrite()) {
-                String currentDBPath = "//data//" + getActivity().getPackageName() + "//databases//" + BDDSensors + "";
-                String backupDBPath = getDateString() + " backupBDD" + ".db";
-                File currentDB = new File(data, currentDBPath);
-                File backupDB = new File(sdDow, backupDBPath);
-                Toast.makeText(getApplicationContext(), "Guardando BDD", Toast.LENGTH_SHORT).show();
-
-                if (currentDB.exists()) {
-                    FileChannel src = new FileInputStream(currentDB).getChannel();
-                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-                }
-            }
-        } catch (Exception e) {
-        }
-    }
-*/
     public String getDateString() {
         long tsLong;
         tsLong = System.currentTimeMillis();
@@ -425,6 +424,7 @@ public class SensorsService extends Service implements SensorEventListener,Locat
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
             criteria.setCostAllowed(false);
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.addNmeaListener(mNmeaListener);
             String providerName = locationManager.getBestProvider(criteria, true);
             Log.d("PruebAct", "Provider by (network/gps): " + providerName);
 
@@ -445,11 +445,14 @@ public class SensorsService extends Service implements SensorEventListener,Locat
 
         LAT = location.getLatitude();
         LON = location.getLongitude();
+        double currentSpeed = location.getSpeed()*3.6;
+        speed = round((currentSpeed),3);
 
        // textLat.setText(String.valueOf(LAT));
        // textLon.setText(String.valueOf(LON));
 
-        LocAltitude=0; //gpsapp.getNoSats();
+        LocAltitude=0; //
+        //get sats
 
         //tvEdoGPS.setText("Conexión con GPS Disponible");
         //EDOGPSBoo = true;
@@ -459,6 +462,62 @@ public class SensorsService extends Service implements SensorEventListener,Locat
         Speed= location.getSpeed();
 
     }
+
+    private void parseNmeaString(String line) {
+        NmaLine = line;
+        Long tsLong = System.currentTimeMillis()/1000;
+        String ts = tsLong.toString();
+        if (line.startsWith("$")) {
+            String[] tokens = line.split(",");
+            String type = tokens[0];
+
+            if(type.startsWith("$GPGSV")){
+                if (!tokens[3].isEmpty()) {
+                    NoSats = Integer.parseInt(tokens[3]);
+                    C1=(tokens[1]);
+                }
+            }
+            // Parse altitude above sea level, Detailed description of NMEA string here http://aprs.gids.nl/nmea/#gga
+            if (type.startsWith("$GPGGA")) {
+                if (!tokens[1].isEmpty()) {
+                    UTCDate = (tokens[1]);
+                    C1=(tokens[1]);
+                }
+                if (!tokens[2].isEmpty()) {
+                    NMEALat = (tokens[2]);
+                    C2=(tokens[2]);
+                }
+                if (!tokens[3].isEmpty()) {
+                    C3=(tokens[3]);
+                }
+                if (!tokens[4].isEmpty()) {
+                    NMEALog = (tokens[4]);
+                    C4=(tokens[4]);
+                }
+                if (!tokens[5].isEmpty()) {
+                    C5=(tokens[5]);
+                }
+                if (!tokens[6].isEmpty()) {
+                    C6=(tokens[6]);
+                }
+                if (!tokens[7].isEmpty()) {
+                    //NoSats = Integer.parseInt(tokens[7]);
+                    C7=(tokens[7]);
+                }
+                if (!tokens[8].isEmpty()) {
+                    C8=(tokens[8]);
+                }
+                if (!tokens[9].isEmpty()) {
+                    NMEAAlt = Double.parseDouble(tokens[9]);
+                    C9=(tokens[8]);
+                }
+                InfoGPS="2223"+ts+line+"/n";
+            }
+        }
+
+    }
+
+
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {

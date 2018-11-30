@@ -30,7 +30,7 @@ public class MessageFiles {
     private String parentDirStr = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String filePathStr = parentDirStr + File.separator + prefix;
     private File parentDir;
-    public File f;
+    public File f = new File(filePathStr);
     private FileWriter fileWriter;
     private CSVWriter csvWriter;
 
@@ -189,7 +189,7 @@ public class MessageFiles {
             parentDirStr = Environment.getExternalStorageDirectory().getAbsolutePath();
             generateFilePath();
 
-            Log.d(TAG,"New file path: " + filePathStr);
+            Log.d(TAG,"New file path er: " + filePathStr);
         }
     }
 

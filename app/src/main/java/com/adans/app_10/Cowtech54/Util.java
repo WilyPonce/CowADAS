@@ -186,4 +186,48 @@ public class Util{
         }
         return array;
     }
+
+    //Sum in Double array
+    public static double sumInArray(double[] array){
+        double sum=0;
+        int len = array.length;
+        for(int i = 0; i< len; i++){
+            sum = sum + array[i];
+        }
+
+        return sum;
+    }
+
+    //Sum in Double array
+    public static double[] arrayDividedBy1000(double[] array){
+        int len = array.length;
+        double array2[] = new double[len];
+        for(int i = 0; i< len; i++){
+            array2[i] = array[i]/1000.0;
+        }
+
+        return array2;
+    }
+
+    //Sum in Double array
+    public static double[] arrayXfactor(double[] array, double factor){
+        int len = array.length;
+        double array2[] = new double[len];
+        for(int i = 0; i< len; i++){
+            array2[i] = array[i]*factor;
+        }
+
+        return array2;
+    }
+
+    public static String doubleArray2String(double[] array){
+        int len = array.length;
+        String str = "{";
+        for(int i = 0; i<array.length; i++){
+            str += array[i] + ", ";
+        }
+        str += "}";
+
+        return str;
+    }
 }

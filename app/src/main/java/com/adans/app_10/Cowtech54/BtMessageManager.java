@@ -1,12 +1,11 @@
 package com.adans.app_10.Cowtech54;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import com.adans.app_10.Cowtech54.Util;
-import com.adans.app_10.Dif;
+
+import com.adans.app_10.ADAS.Dif;
 
 import static com.adans.app_10.Cowtech54.Util.linked2Array;
 
@@ -14,31 +13,10 @@ import static com.adans.app_10.Cowtech54.Util.linked2Array;
  * Created by Wily on 09/03/2018.
  */
 
-/*public class MySingletonClass {
-
-    private static MySingletonClass instance;
-
-    public static MySingletonClass getInstance() {
-        if (instance == null)
-            instance = new MySingletonClass();
-        return instance;
-    }
-
-    private MySingletonClass() {
-    }
-
-    private int intValue;
-
-    public int getIntValue() {
-        return intValue;
-    }
-
-    public void setIntValue(int intValue) {
-        this.intValue = intValue;
-    }
-}*/
 
 public class BtMessageManager {
+
+    private final String TAG = BtMessageManager.class.getSimpleName();
 
     public static String Message;
     public static Set<String> IDsListSet;
@@ -50,12 +28,16 @@ public class BtMessageManager {
     public static String MessagePurgedCopy = "";
 
     //For algorithms
-    public LinkedList<Number> timeVel;
-    public LinkedList<Number> vel;
-    public LinkedList<Number> timeRPM;
-    public LinkedList<Number> RPM;
+    public LinkedList<Number> timeVel = new LinkedList<Number>();
+    public LinkedList<Number> vel = new LinkedList<Number>();
+    public LinkedList<Number> timeRPM = new LinkedList<Number>();
+    public LinkedList<Number> RPM = new LinkedList<Number>();
 
     CowTabFragment1 CowFac1=new CowTabFragment1();
+    private double fuelConsum = 10.5;
+    private double emissions = 111;
+    private double timePeriodVel = 0.1;
+    private int drivingStyle = 0;
 
     // -- Constructors
     public BtMessageManager(){ //Default constructor
@@ -92,6 +74,24 @@ public class BtMessageManager {
     }
 
     //Getters
+
+
+    public double getTimePeriodVel() {
+        return timePeriodVel;
+    }
+
+    public double getFuelConsum() {
+        return fuelConsum;
+    }
+
+    public double getEmissions() {
+        return emissions;
+    }
+
+    public int getDrivingStyle() {
+        return drivingStyle;
+    }
+
 
 
     public Set<String> getIDsListSet() {
@@ -170,40 +170,81 @@ public class BtMessageManager {
                     }
                 }
 
-                //ADAS algorithms
+                //---- ADAS algorithms ------
                 int numSamples = 30;
-                int timeSample = 5; //Seconds
+                int timeSample = 5000; //mSeconds
 
-                double timePeriodVel = 0;
-                if((int)currentIDNum == 2037){
+                timePeriodVel = 0;
+                if(currentIDNum.intValue() == 2037){ //2037 = vel ID in COW for vehicles (no trucks j1939)
                     timeVel.add(IDtram[0]);
-                    vel.add(IDtram[3]);
-                    if(timeVel.size()>2)
+                    vel.add(IDtram[5]);
+                    if(timeVel.size()>10)
                         timePeriodVel = (double)timeVel.getLast() - (double)timeVel.getFirst();
+                    else
+                        timePeriodVel = 0;
                 }
-                if((int)currentIDNum == 2037) {
+                if(currentIDNum.intValue() == 2036) { //2036 = RPM ID in COW for vehicles (no trucks j1939)
                     timeRPM.add(IDtram[0]);
-                    RPM.add(IDtram[3]);
+                    RPM.add(IDtram[5]);
                 }
 
-                //Init arrays for algorithms
-                double[] timeVel_ = new double[timeVel.size()];
-                double[] timeRPM_ = new double[timeRPM.size()];
-                double[] vel_ = new double[vel.size()];
-                double[] RPM_ = new double[RPM.size()];
-
-                double[] velAtRPM = new double[RPM.size()];
-                double[] acel = velAtRPM;
-
+                //Execute algorithms if there is a Period of at least 5s, then refresh for next execution
                 if(timePeriodVel >= timeSample){
+
+                    //Init arrays for algorithms
+                    double[] timeVel_ = new double[timeVel.size()];
+                    double[] timeRPM_ = new double[timeRPM.size()];
+                    double[] vel_ = new double[vel.size()];
+                    double[] RPM_ = new double[RPM.size()];
+                    double[] vel_interp;
+
+                    double[] velAtRPM = new double[RPM.size()];
+                    double[] acel = velAtRPM;
+
+
                     timeVel_= linked2Array(timeVel, timeVel_ );
                     timeRPM_=linked2Array(timeRPM, timeRPM_ );
+
+                    timeRPM_ = Util.arrayDividedBy1000(timeRPM_);//time in seconds
+                    timeVel_ = Util.arrayDividedBy1000(timeVel_);//time in seconds
+                    // vel = Util.arrayXfactor(vel,1/3.6); //Km/h to m/s
+
                     vel_=linked2Array(vel, vel_ );
-                    RPM_=linked2Array(RPM, RPM_ );
+                    //RPM_=linked2Array(RPM, RPM_ );
 
-                    velAtRPM = Util.interpLinear(timeVel_,vel_,timeRPM_);
-                    acel = Dif.Deltas(velAtRPM, timeRPM_);
+                    vel_interp = Util.interpLinear(timeVel_,vel_ , timeRPM_);
 
+//                    fuelConsum = Dif.fuelConsumption(vel_interp, timeRPM_);
+//                    emissions = Dif.emissions(vel_interp, timeRPM_, fuelConsum);
+
+                    fuelConsum = Dif.fuelConsumption(vel_, timeVel_);
+                    emissions = Dif.emissions(vel_, timeVel_, fuelConsum);
+                    if(RPM.size()>3) {
+                        drivingStyle = Dif.gearsMaxChanges(vel_interp, RPM_, timeRPM_);
+
+                        //Reinit var
+                        timeVel = new LinkedList<Number>();
+                        timeRPM = new LinkedList<Number>();
+                        vel = new LinkedList<Number>();
+                        RPM = new LinkedList<Number>();
+                        //Store the last value at first
+                        timeVel.add( timeVel_[timeVel_.length-1]*1000.0);
+                        timeRPM.add( timeRPM_[timeRPM_.length-1]*1000.0);
+                        vel.add(vel_[vel_.length-1]);
+                        RPM.add(RPM_[RPM_.length-1]);
+                    }
+                    else
+                        drivingStyle = 1;
+
+
+
+                    /*
+                    Log.d(TAG, "timeVel_: " + Util.doubleArray2String(timeVel_));
+                    Log.d(TAG, "timeRPM_: " + Util.doubleArray2String(timeRPM_) );
+                    Log.d(TAG, "vel_: " + Util.doubleArray2String(vel_));
+                    Log.d(TAG, "vel_interp: " + Util.doubleArray2String(vel_interp));
+                    */
+                    
                 }
 
 
